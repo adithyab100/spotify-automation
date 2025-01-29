@@ -51,8 +51,13 @@ SPOTIFY_REDIRECT_URI=http://localhost:8888/callback
 Use `spotify_playlist_creator.py` to create a new playlist with your top tracks:
 
 ```bash
-python src/spotify_playlist_creator.py <number_of_songs> <days> [--name "Playlist Name"]
+python src/spotify_playlist_creator.py <number_of_songs> <days> [options]
 ```
+
+Options:
+- `-n, --name "Name"`: Custom playlist name
+- `-g, --genre "Genre"`: Filter songs by genre (e.g., "rock", "pop", "hip hop")
+- `-l, --list-genres`: List all available genres in your top tracks
 
 Examples:
 ```bash
@@ -61,6 +66,15 @@ python src/spotify_playlist_creator.py 20 30
 
 # Create a playlist with a custom name
 python src/spotify_playlist_creator.py 20 30 --name "My Favorite Songs"
+
+# Create a playlist with only rock songs
+python src/spotify_playlist_creator.py 20 30 --genre "rock"
+
+# See what genres are available in your top tracks
+python src/spotify_playlist_creator.py 20 30 --list-genres
+
+# Combine options
+python src/spotify_playlist_creator.py 20 30 --name "My Rock Playlist" --genre "rock"
 ```
 
 ### 2. Auto-Updating Playlist
