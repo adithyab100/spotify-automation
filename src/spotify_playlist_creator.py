@@ -1,57 +1,59 @@
+#!/usr/bin/env python3
 import sys
+import argparse
+from datetime import datetime
 from spotify_utils import (
     create_spotify_client,
     get_top_tracks,
     get_or_create_playlist,
+    update_playlist,
     validate_track_params,
     get_time_range_for_days,
     print_track_list
 )
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python spotify_playlist_creator.py <number_of_songs> <days>")
-        print("Example: python spotify_playlist_creator.py 20 30")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Create a Spotify playlist with your top tracks')
+    parser.add_argument('num_songs', type=int, help='Number of songs to include (max 50)')
+    parser.add_argument('days', type=int, help='Time range in days')
+    parser.add_argument('-n', '--name', type=str, default=None,
+                      help='Name of the playlist (default: "Top Songs [timeframe] - [date]")')
     
-    try:
-        num_songs = int(sys.argv[1])
-        days = int(sys.argv[2])
-    except ValueError:
-        print("Error: Both arguments must be numbers")
-        sys.exit(1)
+    args = parser.parse_args()
     
     try:
         # Validate parameters
-        num_songs, days = validate_track_params(num_songs, days)
+        num_songs, days = validate_track_params(args.num_songs, args.days)
         
         # Get Spotify client
         sp = create_spotify_client()
+        
+        # Generate default playlist name if not provided
+        if args.name is None:
+            timeframe = "4 weeks" if days <= 28 else "6 months" if days <= 180 else "all time"
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            playlist_name = f"Top Songs ({timeframe}) - {current_date}"
+        else:
+            playlist_name = args.name
+        
+        # Get or create playlist
+        playlist_id = get_or_create_playlist(sp, playlist_name)
         
         # Get top tracks
         time_range = get_time_range_for_days(days)
         top_tracks = get_top_tracks(sp, limit=num_songs, time_range=time_range)
         track_uris = [track['uri'] for track in top_tracks]
         
-        # Create playlist name based on parameters
-        playlist_name = f"Top {num_songs} Songs - Past {days} Days"
+        # Update playlist
+        update_playlist(sp, playlist_id, track_uris)
         
-        # Create playlist and add tracks
-        playlist_id = get_or_create_playlist(sp, playlist_name)
-        sp.playlist_add_items(playlist_id, track_uris)
+        print(f"\nCreated playlist: {playlist_name}")
+        print(f"URL: https://open.spotify.com/playlist/{playlist_id}")
         
-        # Get playlist URL
-        playlist = sp.playlist(playlist_id)
-        playlist_url = playlist['external_urls']['spotify']
+        print_track_list(top_tracks)
         
-        print(f"\nSuccess! Your playlist has been created!")
-        print(f"Playlist URL: {playlist_url}")
-        
-        # Print track list
-        print_track_list(top_tracks, "Tracks added:")
-            
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        print(f"Error: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -51,12 +51,16 @@ SPOTIFY_REDIRECT_URI=http://localhost:8888/callback
 Use `spotify_playlist_creator.py` to create a new playlist with your top tracks:
 
 ```bash
-python src/spotify_playlist_creator.py <number_of_songs> <days>
+python src/spotify_playlist_creator.py <number_of_songs> <days> [--name "Playlist Name"]
 ```
 
-Example:
+Examples:
 ```bash
-python src/spotify_playlist_creator.py 20 30  # Creates a playlist with your top 20 songs from the last 30 days
+# Create a playlist with default name (includes timeframe and date)
+python src/spotify_playlist_creator.py 20 30
+
+# Create a playlist with a custom name
+python src/spotify_playlist_creator.py 20 30 --name "My Favorite Songs"
 ```
 
 ### 2. Auto-Updating Playlist
